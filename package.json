@@ -1,0 +1,19 @@
+{
+  "name": "slack-bflow-ux",
+  "version": "1.0.0",
+  "description": "A Slack Block Kit implementation of the Boomi Flow UX",
+  "main": "app.js",
+  "dependencies": {
+    "@slack/bolt": "^2.1.1",
+    "axios": "^0.19.2",
+    "node-schedule": "^1.3.2",
+    "redis": "^3.0.2",
+    "turndown": "^6.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Steve Wood",
+  "license": "ISC"
+}
