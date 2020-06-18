@@ -1,6 +1,5 @@
 /*jshint esversion: 8 */
 const { App } = require('@slack/bolt');
-const axios = require('axios');
 
 const engine = require('./engine/engine');
 
@@ -15,10 +14,6 @@ const app = new App({
 
 // Start the shared services
 const runtime = engine.start(app);
-
-const options = {
-  headers: { 'ManyWhoTenant': settings.BOOMI_FLOW_TENANT_ID }
-};
 
 // Called as a result of a modal outcome being clicked
 app.view(/^mod_outcome_*/, async ({ ack, body, view, context, respond }) => {
@@ -45,7 +40,7 @@ app.view(/^mod_outcome_*/, async ({ ack, body, view, context, respond }) => {
   let url = settings.BOOMI_FLOW_BASE_URL + settings.BOOMI_FLOW_RUN_PATH + '/' + data.stateId;
 
   // Make the request out to the flow runtime
-  runtime.execute(url, data, options, respond, body, data.channel_id);
+  runtime.execute(url, data, settings.OPTIONS, respond, body, data.channel_id);
 });
 
 // Called as a result of an outcome being clicked
@@ -59,7 +54,7 @@ app.action(/^mes_outcome_*/, async ({ action, ack, respond, body }) => {
   let url = settings.BOOMI_FLOW_BASE_URL + settings.BOOMI_FLOW_RUN_PATH  + '/' + data.stateId;
 
   // Make the request out to the flow runtime
-  runtime.execute(url, data, options, respond, body, data.channel_id);
+  runtime.execute(url, data, settings.OPTIONS, respond, body, data.channel_id);
 });
 
 app.command('/boomi', async ({ command, ack, say, body, context, respond }) => {
@@ -78,20 +73,28 @@ app.command('/boomi', async ({ command, ack, say, body, context, respond }) => {
       commandText = commandText.replace('mixed', '').trim();
     }
 
-    let flow = runtime.getFlowByName(commandText);
-    
-        // Make the request out to the flow runtime
-        runtime.execute(
-          settings.BOOMI_FLOW_BASE_URL + settings.BOOMI_FLOW_RUN_PATH,
-          { "id": response.data.id.id },
-          options,
-          respond,
-          body,
-          command.channel_id);
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    runtime.getFlows(commandText, function(err, reply) {
+      if (!logic.isNullOrEmpty(reply)) {
+        let flows = JSON.parse(reply);
+
+        if (!logic.isNullOrEmpty(flows)) {
+          let filteredFlows = flows.filter(
+            flow =>
+            flow.developerName.toLowerCase() == commandText);
+
+          if (!logic.isNullOrEmpty(filteredFlows)) {
+            // Make the request out to the flow runtime
+            runtime.execute(
+              settings.BOOMI_FLOW_BASE_URL + settings.BOOMI_FLOW_RUN_PATH,
+              { "id": filteredFlows[0].id.id },
+              settings.OPTIONS,
+              respond,
+              body,
+              command.channel_id);
+          }
+        }
+      }
+    });
   }
 });
 

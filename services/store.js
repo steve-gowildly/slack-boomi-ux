@@ -8,11 +8,13 @@ module.exports = {
     let store = {};
 
     store.client = client;
-    store.get = function (key) {
-      return this.client.get(key);
+    store.get = function (key, responseFunction) {
+      this.client.get(key, responseFunction);
     };
     store.set = function(key, value) {
       return this.client.set(key, value);
     };
+
+    return store;
   }
 };

@@ -6,6 +6,7 @@ const state = require('./state');
 
 const store = require('../services/store');
 const convert = require('../services/convert');
+const schedule = require('../services/schedule');
 
 const settings = require('../utils/settings');
 const logic = require('../utils/logic');
@@ -16,24 +17,15 @@ module.exports = {
     const storer = store.start();
     const converter = convert.start();
 
+    // Start the scheduler to get the list of available flows
+    schedule.start(storer);
+
     let engine = {};
     engine.storer = storer;
     engine.converter = converter;
     engine.app = app;
-    engine.getFlowByName = function(name) {
-      let flows = storer.get(settings.STORER_FLOWS_KEY);
-
-      if (!logic.isNullOrEmpty(flows)) {
-        let filteredFlows = flows.filter(
-          flow =>
-          flow.developerName.toLowerCase() == name.toLowerCase());
-
-        if (!logic.isNullOrEmpty(filteredFlows)) {
-          return flow;
-        }
-      }
-
-      return null;
+    engine.getFlows = function(name, responseFunction) {
+      storer.get(settings.STORER_FLOWS_KEY, responseFunction);
     };
     engine.applyInputs = function(state, inputs) {
       state.mapElementInvokeRequest.pageRequest = {};

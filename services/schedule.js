@@ -1,22 +1,21 @@
 /*jshint esversion: 6 */
-const schedule = require('node-schedule');
+const CronJob = require('cron').CronJob;
 const axios = require('axios');
-
-const settings = require('./utils/settings');
+const settings = require('../utils/settings');
 
 module.exports = {
   start: function (storer) {
-    schedule.scheduleJob('* 1 * * *', function(){
-      var flows = storer.get(settings.STORER_FLOWS_KEY);
-
-      axios.get(settings.BOOMI_FLOW_BASE_URL + settings.BOOMI_FLOW_ALL_PATH, options)
+    let job = new CronJob('5 * * * * *', function() {
+      axios.get(settings.BOOMI_FLOW_BASE_URL + settings.BOOMI_FLOW_ALL_PATH, settings.OPTIONS)
         .then(response => {
-          storer.set(settings.STORER_FLOWS_KEY, flows);
-          console.log('Refreshed the list of available flows to execute');
+          if (response.data != null) {
+            storer.set(settings.STORER_FLOWS_KEY, JSON.stringify(response.data));
+          }
         })
         .catch(error => {
           console.log(error);
         });
-    });
+    }, null, true, 'America/Los_Angeles');
+    job.start();
   }
 };

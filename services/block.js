@@ -63,7 +63,7 @@ module.exports = {
           "type": "plain_text",
           "text": converter.convert('mrkdwn', component.helpInfo)
         },
-        "optional": component.isRequired
+        "optional": !component.isRequired
       });
     } else {
       throw "Component type is not supported: " + component.componentType;
