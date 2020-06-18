@@ -15,6 +15,41 @@ const app = new App({
 // Start the shared services
 const runtime = engine.start(app);
 
+app.message(/^(hi|hello|hey).*/, async ({ context, say, body, command }) => {
+  // RegExp matches are inside of context.matches
+  let message = context.matches.input.toLowerCase();
+
+  console.log(body);
+
+  runtime.getFlows(null, function(err, reply) {
+    if (!logic.isNullOrEmpty(reply)) {
+      let flows = JSON.parse(reply);
+
+      if (!logic.isNullOrEmpty(flows)) {
+         let filteredFlows = flows.filter(
+           flow =>
+           message.includes(flow.developerName.toLowerCase()));
+
+        if (!logic.isNullOrEmpty(filteredFlows)) {
+          say('We found a flow that should do the trick!...');
+          // Make the request out to the flow runtime
+          runtime.execute(
+            settings.BOOMI_FLOW_BASE_URL + settings.BOOMI_FLOW_RUN_PATH,
+            { "id": filteredFlows[0].id.id },
+            settings.OPTIONS,
+            null,
+            body,
+            body.event.channel);
+        } else {
+          say('Sorry, no flows were found that can help you with that.');
+        }
+      }
+    } else {
+      say('No flows found - make sure you publish them and wait a few minutes!');
+    }
+  });
+});
+
 // Called as a result of a modal outcome being clicked
 app.view(/^mod_outcome_*/, async ({ ack, body, view, context, respond }) => {
   // Acknowledge the view_submission event
