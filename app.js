@@ -19,8 +19,6 @@ app.message(/^(hi|hello|hey).*/, async ({ context, say, body, command }) => {
   // RegExp matches are inside of context.matches
   let message = context.matches.input.toLowerCase();
 
-  console.log(body);
-
   runtime.getFlows(null, function(err, reply) {
     if (!logic.isNullOrEmpty(reply)) {
       let flows = JSON.parse(reply);

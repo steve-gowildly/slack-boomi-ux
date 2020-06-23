@@ -1,6 +1,8 @@
 /*jshint esversion: 6 */
 const TurndownService = require('turndown');
 
+const logic = require('../utils/logic');
+
 module.exports = {
   start: function () {
     var turndownService = new TurndownService();
@@ -14,7 +16,10 @@ module.exports = {
         throw 'Conversion format must be mrkdwn';
       }
 
-      return this.turndownService.turndown(content);
+      if (!logic.isNullOrEmpty(content)) {
+        return this.turndownService.turndown(content);
+      }
+      return null;
     };
 
     return converter;
